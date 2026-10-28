@@ -82,6 +82,21 @@ content, so it cannot launder an injection attempt into instructions.
   untouched. `scripts/logout.mjs` deletes a profile only with `--yes`, only when
   its browser is not running, and never in personal mode.
 
+## Automatic browser download
+
+When no Chromium build exists on the machine, the plugin fetches the stable
+Chrome for Testing build and nothing else:
+
+- One HTTPS request to `googlechromelabs.github.io` for the published version
+  index, one to `storage.googleapis.com` for the archive it names.
+- The archive is verified by structure only (ZIP central directory, entry paths
+  sanitised to stay under the cache directory). It is **not** signature-checked;
+  the transport is TLS to Google's own hosts, nothing more.
+- Nothing is sent to those hosts beyond the request itself: no query, no
+  profile data, no machine identifier.
+- `autoProvision: false` disables it entirely for anyone who wants an offline,
+  pinned browser, and `chromePath` always wins over the download.
+
 ## Politeness and target sites
 
 This plugin drives a real browser, so from a site's point of view the traffic is
