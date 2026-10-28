@@ -13,6 +13,7 @@ Harness 自带的搜索走 HTTP API，自带的抓取就是个 HTTP 客户端。
 它不改工具、不改提示词、不改任何面向模型的文案，只注册两个 `ctx.web` provider，再把 `web` 服务指过去。
 
 - `web_search` → 在真实标签页里打开 Bing / DuckDuckGo / 百度，从 DOM 里取结果链接，还原跳转地址，返回 `{ sources: [{ title, url, snippet }] }`。
+- `web_download` → 用浏览器的 cookie、UA 和你给的 `Referer` 把文件（图片、视频、音频、PDF、zip）存到磁盘；字节不进入对话，返回路径、大小和 sha256。这是「按 tag 找图并留下原图」能成立的原因——`i.pximg.net` 没有 pixiv 的 Referer 会直接 403。
 - `web_fetch` → 在真实标签页里打开目标页，等掉常见的机器人拦截页，去掉 script/style/svg/iframe，返回干净的 HTML 或纯文本。
 
 ## 安装
@@ -57,6 +58,11 @@ plugin_manager install_bundle  target: /absolute/path/to/dsh-chromium-websearch
 | `chromePath` | 自动探测 | 也读 `DSH_BROWSER_CHROME` / `CHROME_PATH`。 |
 | `autoProvision` | `true` | 找不到浏览器时自动下载。 |
 | `allowPrivateHosts` | `false` | `web_fetch` 默认拒绝回环与内网地址；`true` 全放开，写成 `['nas.lan']` 这样的列表则只放行列出的主机。 |
+| `downloadDir` | `~/.dsh/browser-web/downloads` | `web_download` 的根目录，单次默认落在 `<YYYYMMDD>` 子目录。 |
+| `downloadMaxBytes` | `52428800` | 单文件上限，流式写入时中途就会拒绝。 |
+| `downloadMaxFiles` | `20` | 单次调用允许的 URL 数上限。 |
+| `downloadTimeoutMs` | `60000` | 单个文件的超时。 |
+| `downloadMinIntervalMs` | `1000` | 同一批文件之间的间隔。 |
 | `provisionDir` | `~/.dsh/browser-web/chromium` | 下载的浏览器放哪。 |
 | `indexUrl` | 官方索引 | 换镜像或离线副本时用。 |
 | `headless` | `false` | 无窗口运行；有些拦截页只有有头模式能过。 |

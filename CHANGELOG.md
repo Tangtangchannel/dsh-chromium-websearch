@@ -5,6 +5,19 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) with the usual `0.x`
 allowance: minor releases may break compatibility.
 
+## [0.4.0] - 2026-10-29
+
+### Added
+
+- `web_download`: saves images, video, audio, PDF, and zip files to disk using
+  the browser session's cookies and user agent, plus a caller-supplied
+  `Referer`. Bytes never enter the conversation; the tool returns the path,
+  size, and sha256. This is what makes "collect the originals for tag X" work
+  on hotlink-protected hosts such as `i.pximg.net`.
+- Limits and guards: private-address refusal (same check as `web_fetch`),
+  media-only content types, a streamed size cap, `wx` file creation with
+  de-duplicated names, a per-file timeout, and a pause between files.
+
 ## [0.3.0] - 2026-10-28
 
 ### Changed

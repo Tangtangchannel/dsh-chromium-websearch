@@ -20,6 +20,11 @@ It changes no tool, no prompt, and no model-facing text. It only registers two
 - `web_search` → loads Bing, DuckDuckGo, or Baidu in a real tab, extracts result
   links from the DOM, unwraps redirect URLs, and returns
   `{ sources: [{ title, url, snippet }] }`.
+- `web_download` → saves a file (image, video, audio, PDF, zip) to disk using the
+  browser's cookies, user agent, and a `Referer` you pass in. The bytes never
+  enter the conversation: you get back a path, its size, and a sha256. This is
+  what makes "find pictures of tag X and keep the originals" work on hosts that
+  refuse bare requests (`i.pximg.net` answers 403 without a pixiv Referer).
 - `web_fetch` → loads the URL in a real tab, waits out common bot
   interstitials, strips scripts/styles/svg/iframes, and returns the cleaned HTML
   (or visible text) plus the status code and final URL.
@@ -173,6 +178,11 @@ browser installed.
 | `journal` | `true` | Append JSONL trace lines. |
 | `journalPath` | `~/.dsh/browser-web/events.jsonl` | Trace file. |
 | `closeBrowserOnDispose` | `false` | Kill the browser this plugin started when it unloads. |
+| `downloadDir` | `~/.dsh/browser-web/downloads` | Root for `web_download`; each call defaults to a `<YYYYMMDD>` subdirectory. |
+| `downloadMaxBytes` | `52428800` | Refuse a single file larger than this (streamed, so the limit is enforced mid-flight). |
+| `downloadMaxFiles` | `20` | Refuse a `web_download` call asking for more URLs than this. |
+| `downloadTimeoutMs` | `60000` | Per-file deadline. |
+| `downloadMinIntervalMs` | `1000` | Pause between files in one call. |
 
 ## Reloading
 

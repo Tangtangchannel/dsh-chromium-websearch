@@ -1,6 +1,8 @@
 import { normalizeSettings } from './lib/config.js'
 import { BrowserHost } from './lib/chrome.js'
+import { createDownloadTool } from './lib/download.js'
 import { createJournal } from './lib/journal.js'
+import { PageSession } from './lib/page.js'
 import { createProviders } from './lib/providers.js'
 
 /** Cordis plugin name, shown in composition listings. */
@@ -10,7 +12,7 @@ export const name = 'web-browser'
  * The `web` service must exist before `apply` runs, otherwise there is nothing
  * to register a provider with.
  */
-export const inject = ['web']
+export const inject = ['web', 'tools']
 
 /**
  * Register a headful-browser search provider and fetch provider with `ctx.web`,
@@ -28,12 +30,21 @@ export function apply(ctx, config) {
   const journal = createJournal(settings)
   const host = new BrowserHost(settings)
   const providers = createProviders(host, settings, journal)
+  const downloadTool = createDownloadTool({
+    settings,
+    journal,
+    openSession: () => PageSession.open(host),
+  })
 
   ctx.effect(() => {
     const disposers = [
       ctx.web.registerSearchProvider(providers.search),
       ctx.web.registerFetchProvider(providers.fetch),
     ]
+    if (typeof ctx.tools?.register === 'function') {
+      const disposeTool = ctx.tools.register(downloadTool)
+      if (typeof disposeTool === 'function') disposers.push(disposeTool)
+    }
     return async () => {
       for (const dispose of disposers.reverse()) {
         try {

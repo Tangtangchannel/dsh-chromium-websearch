@@ -145,6 +145,30 @@ install is made with them in view, not discovered later:
   browser you installed and verified yourself, or use `autoProvision: false`
   and provision offline.
 
+## Downloads
+
+`web_download` writes bytes to disk instead of returning them, which changes
+the failure mode of a wrong URL: a mistake leaves a file rather than a
+paragraph. The guard rails are:
+
+- every URL passes the same private-address check as `web_fetch`, so the tool
+  cannot be used to pull from loopback or a LAN;
+- the response content type must be media (`image/*`, `video/*`, `audio/*`,
+  `application/pdf`, zip, `octet-stream`) — `text/html` is refused, so a login
+  wall or bot challenge never gets saved as if it were the file;
+- the size limit is enforced while streaming (`downloadMaxBytes`, 50 MB by
+  default), and a refused or aborted download deletes the partial file;
+- file names are reduced to a single path segment and created with `wx`, so a
+  crafted `Content-Disposition` or URL cannot escape `downloadDir` or overwrite
+  an existing file;
+- cookies are read from the browser session for the exact URL being fetched
+  and are sent only to that origin; the `Referer` is whatever page the caller
+  names, which is what hotlink-protected hosts expect.
+
+What it does **not** do: no multi-threaded fetching, no bypassing paywalls or
+login gates (it only reuses a session that already has access), and no
+retrying around a 403 — a refusal is reported, not worked around.
+
 ## Politeness and target sites
 
 This plugin drives a real browser, so from a site's point of view the traffic is
