@@ -6,12 +6,12 @@ import { deflateRawSync } from 'node:zlib'
 
 import { test } from './harness.mjs'
 import { ARCHIVE_LAYOUT, binaryIn, pickArchive, platformKey } from '../lib/provision.js'
-import { extractZip, listEntries } from '../lib/zip.js'
+import { extractZip, listEntries, readEntry } from '../lib/zip.js'
 
 /**
  * Build a ZIP archive in memory, with stored (0) and deflated (8) entries.
  *
- * @param {{ name: string, data: string, method?: 0 | 8 }[]} entries - archive entries.
+ * @param {{ name: string, data: string | Buffer, method?: 0 | 8 }[]} entries - archive entries.
  * @returns {Buffer} the archive bytes.
  */
 function buildZip(entries) {
@@ -21,7 +21,7 @@ function buildZip(entries) {
   for (const entry of entries) {
     const method = entry.method ?? 0
     const name = Buffer.from(entry.name, 'utf8')
-    const payload = Buffer.from(entry.data, 'utf8')
+    const payload = Buffer.isBuffer(entry.data) ? entry.data : Buffer.from(entry.data, 'utf8')
     const body = method === 8 ? deflateRawSync(payload) : payload
 
     const header = Buffer.alloc(30)
@@ -124,4 +124,22 @@ test('binary layout matches the official archives', () => {
   assert.equal(binaryIn('/cache/141.0.7390.54', 'linux64'), join('/cache/141.0.7390.54', 'chrome-linux64', 'chrome'))
   assert.equal(binaryIn('/cache/141.0.7390.54', 'win64'), join('/cache/141.0.7390.54', 'chrome-win64', 'chrome.exe'))
   assert.deepEqual(Object.keys(ARCHIVE_LAYOUT).sort(), ['linux64', 'mac-arm64', 'mac-x64', 'win32', 'win64'])
+})
+
+test('a deflate bomb is refused before it fills memory', () => {
+  // 70 MB of zeros deflates to a few tens of kilobytes: high ratio, low size.
+  // The 64 MB floor is what this crosses, so the ratio guard has to hold.
+  const archive = buildZip([{ name: 'bomb.bin', data: Buffer.alloc(70 * 1024 * 1024), method: 8 }])
+  const [entry] = listEntries(archive)
+  assert.throws(
+    () => readEntry(archive, entry),
+    (error) => /zip entry "bomb\.bin" expands past the 67108864 byte limit/u.test(error.message),
+  )
+})
+
+test('a small entry with an unusual ratio is still extracted', () => {
+  // Same shape as a real archive: compresses well, nowhere near the floor.
+  const archive = buildZip([{ name: 'resources/app.asar', data: Buffer.alloc(8 * 1024 * 1024), method: 8 }])
+  const [entry] = listEntries(archive)
+  assert.equal(readEntry(archive, entry).length, 8 * 1024 * 1024)
 })

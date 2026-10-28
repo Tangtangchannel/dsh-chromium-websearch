@@ -5,6 +5,38 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) with the usual `0.x`
 allowance: minor releases may break compatibility.
 
+## [0.3.0] - 2026-10-28
+
+### Changed
+
+- Default `minResults` is now 3. A single hit from an engine that half-blocked
+  the query used to count as an answer; now the search falls through to the next
+  engine instead.
+- `engines.node` is `>=22`. The DevTools transport uses the global `WebSocket`,
+  which Node 20 does not have, so the previous `>=20` declaration was wrong. CI
+  now runs Node 22 and 24 instead of 20 and 22.
+
+### Added
+
+- `web_fetch` refuses loopback, LAN, link-local, and carrier-grade NAT targets
+  (`lib/net-guard.js`) before navigation, so a page the model asks for cannot
+  reach a router admin page or a port on the machine itself. `allowPrivateHosts`
+  opens everything (`true`) or only the listed hosts (`['nas.lan']`).
+- The JSONL trace records which engine produced a result.
+- A CDP smoke test with a hand-rolled WebSocket server, so the Node 22
+  requirement is enforced by a test rather than assumed.
+
+### Fixed
+
+- The Chromium sandbox stays enabled except on Linux where the launch cannot
+  work with it on (running as root or inside a container). It used to be
+  disabled unconditionally.
+- ZIP inflation is capped at `max(compressedSize * 20, 64 MB)` per entry, so a
+  hostile archive cannot expand past memory while still being structurally
+  valid.
+- `SECURITY.md` states the two remaining gaps in one place: DNS rebinding is not
+  defended against, and the downloaded browser archive is not signature-checked.
+
 ## [0.2.1] - 2026-10-28
 
 ### Fixed

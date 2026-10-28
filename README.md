@@ -95,6 +95,9 @@ For local development, point the same call at the checkout instead:
 plugin_manager install_bundle  target: /absolute/path/to/dsh-chromium-websearch
 ```
 
+Requires **Node 22 or newer**: the DevTools transport uses the global
+`WebSocket`, which only became available without a flag in Node 21.
+
 No dependencies are installed: the bundle imports only `node:` builtins and its
 own files, and it runs no install script (package managers block those by
 default anyway).
@@ -152,12 +155,13 @@ browser installed.
 | `markerDir` | sibling of the profile | Where ownership markers live. Never inside a personal profile. |
 | `chromePath` | auto-detect | Browser binary. Also read from `DSH_BROWSER_CHROME` or `CHROME_PATH`. |
 | `autoProvision` | `true` | Download Chrome for Testing when no browser exists. |
+| `allowPrivateHosts` | `false` | `web_fetch` refuses loopback and private addresses. `true` opens all of them; a list such as `['nas.lan']` opens only those hosts. |
 | `provisionDir` | `~/.dsh/browser-web/chromium` | Where the downloaded build lives. |
 | `indexUrl` | the Chrome for Testing index | Override for a mirror or an offline copy of the same JSON document. |
 | `port` | `9334` | Preferred DevTools port. If it is taken, the host scans upward (at most 10 ports) and records the port it actually got. |
 | `headless` | `false` | Run without a window. Some walls only clear headful. |
 | `engines` | `bing`, `duckduckgo`, `baidu` | Preference order. |
-| `minResults` | `1` | Move to the next engine below this count. |
+| `minResults` | `3` | Below this count, the search falls through to the next engine instead of answering with what it got. |
 | `maxResults` | `8` | Hard cap per search. |
 | `searchTimeoutMs` | `45000` | Total search budget. |
 | `fetchTimeoutMs` | `45000` | Total fetch budget. |
@@ -255,3 +259,7 @@ pass the plugin on, publish a modified version, or ship it inside a product.
   `lib/search.js` and its fixture in `test/fixtures/`.
 - A page stalls on a wall — headful mode clears most; a CAPTCHA needs a human in
   the window.
+- `web_fetch` refused a private address — the target resolved to loopback, a LAN
+  address, or a link-local range, and `allowPrivateHosts` is off. Set it to
+  `true` for everything, or to `['nas.lan']` for just the hosts you mean. In
+  `signed-in` / `personal` mode remember the request carries your cookies.

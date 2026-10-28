@@ -125,6 +125,10 @@ test('providers satisfy the web seam and trace without leaking the query', async
       const trace = readFileSync(journalPath, 'utf8')
       const lines = trace.trim().split('\n').map((line) => JSON.parse(line))
       assert.ok(lines.some((line) => line.op === 'search' && line.ok === true && line.count >= 1))
+      const searchLine = lines.find((line) => line.op === 'search' && line.ok === true)
+      assert.equal(typeof searchLine.engine, 'string', 'the trace names the engine that answered')
+      assert.ok(['bing', 'duckduckgo', 'baidu'].includes(searchLine.engine))
+      assert.equal(searchLine.queryHash.length, 16, 'the query is hashed, never stored')
       assert.ok(lines.some((line) => line.op === 'fetch' && line.ok === true && line.host === 'example.com'))
       assert.ok(!trace.includes(query), 'journal must not contain the query text')
     } finally {

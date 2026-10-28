@@ -29,6 +29,8 @@ plugin_manager install_bundle  target: dsh-chromium-websearch
 plugin_manager install_bundle  target: /absolute/path/to/dsh-chromium-websearch
 ```
 
+需要 **Node 22 或更新**：DevTools 通道用的是全局 `WebSocket`，它在 Node 21 才默认可用。
+
 不安装任何依赖：只 import `node:` 内置模块和自己的文件。
 
 ### 浏览器从哪来
@@ -54,16 +56,26 @@ plugin_manager install_bundle  target: /absolute/path/to/dsh-chromium-websearch
 | `mode` | `anonymous` | 见上表。 |
 | `chromePath` | 自动探测 | 也读 `DSH_BROWSER_CHROME` / `CHROME_PATH`。 |
 | `autoProvision` | `true` | 找不到浏览器时自动下载。 |
+| `allowPrivateHosts` | `false` | `web_fetch` 默认拒绝回环与内网地址；`true` 全放开，写成 `['nas.lan']` 这样的列表则只放行列出的主机。 |
 | `provisionDir` | `~/.dsh/browser-web/chromium` | 下载的浏览器放哪。 |
 | `indexUrl` | 官方索引 | 换镜像或离线副本时用。 |
 | `headless` | `false` | 无窗口运行；有些拦截页只有有头模式能过。 |
 | `engines` | `bing`、`duckduckgo`、`baidu` | 优先顺序。 |
+| `minResults` | `3` | 低于这个数就换下一个引擎，而不是拿现有结果直接回答。 |
 | `maxResults` | `8` | 单次搜索上限。 |
 | `fetchTimeoutMs` | `45000` | 抓取总预算。 |
 | `bodyFormat` | `html` | `html` / `text` / `auto`。 |
 | `journal` | `true` | 追加 JSONL 轨迹（不含查询词、URL、cookies）。 |
 
 完整字段见[英文 README](README.md#configuration)。
+
+## 排错
+
+- `web_fetch` 拒绝了一个内网地址——目标解析到回环、内网或链路本地地址，而
+  `allowPrivateHosts` 处于关闭状态。设为 `true` 全放开，或写成 `['nas.lan']`
+  只放行你要的那几台。`signed-in` / `personal` 模式下要注意：这个请求带的是你的登录态。
+- `BROWSER_NOT_FOUND`——本机没有浏览器，且自动下载失败（离线、代理、home 只读）。
+  装一个 Chrome，或设 `chromePath`，或把 `provisionDir` 指到可写目录再试。
 
 ## 测试
 

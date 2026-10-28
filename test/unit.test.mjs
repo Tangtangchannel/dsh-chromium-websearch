@@ -4,10 +4,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { test } from './harness.mjs'
-import { normalizeSettings, resolveChrome, chromeCandidates, missingBrowserHint, PROVIDER_ID } from '../lib/config.js'
+import { DEFAULTS, normalizeSettings, resolveChrome, chromeCandidates, missingBrowserHint, PROVIDER_ID } from '../lib/config.js'
 import { unwrapRedirect, normalizeResults, engineUrl, ENGINE_NAMES } from '../lib/search.js'
 import { looksLikeChallenge } from '../lib/fetch.js'
-import { normalizeUrl } from '../lib/providers.js'
+import { shouldDisableSandbox } from '../lib/chrome.js'
+import { normalizeUrl, createProviders } from '../lib/providers.js'
+import { assertFetchableUrl, isPrivateHost } from '../lib/net-guard.js'
 import { createJournal, hash } from '../lib/journal.js'
 import { collapse, truncate, sleep } from '../lib/util.js'
 import { WebBrowserError, CODE } from '../lib/errors.js'
@@ -188,4 +190,126 @@ test('errors carry a routable code and a cause chain', () => {
   assert.equal(error.code, CODE.CDP_ERROR)
   assert.equal(error.cause, cause)
   assert.ok(error instanceof Error)
+})
+
+test('fetch targets on loopback and private ranges are refused', () => {
+  const refused = [
+    'http://127.0.0.1:8080/',
+    'http://localhost/',
+    'http://app.localhost/',
+    'http://10.0.0.99/',
+    'http://172.16.4.1/',
+    'http://192.168.1.1/',
+    'http://169.254.169.254/latest/meta-data/',
+    'http://100.64.0.1/',
+    'http://0.0.0.0/',
+    'http://[::1]/',
+    'http://[fd00::1]/',
+    'http://[fe80::1]/',
+    'http://[::ffff:127.0.0.1]/',
+    'http://[::ffff:192.168.0.9]/',
+  ]
+  for (const url of refused) {
+    assert.throws(
+      () => assertFetchableUrl(url, { allowPrivateHosts: false }),
+      (error) => error instanceof WebBrowserError
+        && error.code === CODE.PROVIDER_ERROR
+        && /private or loopback address/u.test(error.message)
+        && /allowPrivateHosts/u.test(error.message),
+      url,
+    )
+  }
+})
+
+test('public addresses pass the fetch guard', () => {
+  for (const url of ['https://example.com/', 'https://8.8.8.8/', 'https://[2606:4700:4700::1111]/', 'http://172.32.0.1/']) {
+    assert.doesNotThrow(() => assertFetchableUrl(url, { allowPrivateHosts: false }), url)
+  }
+})
+
+test('allowPrivateHosts opens private ranges, or only the hosts it lists', () => {
+  assert.doesNotThrow(() => assertFetchableUrl('http://192.168.1.1/', { allowPrivateHosts: true }))
+  assert.doesNotThrow(() => assertFetchableUrl('http://nas.lan/', { allowPrivateHosts: ['nas.lan'] }))
+  assert.throws(
+    () => assertFetchableUrl('http://192.168.1.1/', { allowPrivateHosts: ['nas.lan'] }),
+    (error) => error instanceof WebBrowserError && error.code === CODE.PROVIDER_ERROR,
+  )
+})
+
+test('isPrivateHost classifies hosts without a URL', () => {
+  assert.equal(isPrivateHost('localhost'), true)
+  assert.equal(isPrivateHost('LOCALHOST.'), true)
+  assert.equal(isPrivateHost('[::1]'), true)
+  assert.equal(isPrivateHost('192.168.0.1'), true)
+  assert.equal(isPrivateHost('example.com'), false)
+  assert.equal(isPrivateHost('1.1.1.1'), false)
+})
+
+test('allowPrivateHosts defaults to off and rejects malformed values', () => {
+  assert.equal(normalizeSettings({}).allowPrivateHosts, false)
+  assert.throws(() => normalizeSettings({ allowPrivateHosts: 'yes' }), /allowPrivateHosts/u)
+  assert.deepEqual(normalizeSettings({ allowPrivateHosts: ['nas.lan', 'NAS.lan'] }).allowPrivateHosts, ['nas.lan'])
+  assert.throws(() => normalizeSettings({ allowPrivateHosts: [] }), /allowPrivateHosts/u)
+  assert.throws(() => normalizeSettings({ allowPrivateHosts: ['  '] }), /allowPrivateHosts/u)
+})
+
+test('fetch provider refuses a private URL before the browser is touched', async () => {
+  const records = []
+  const host = { ensureBrowser: () => assert.fail('the browser must not start for a refused URL') }
+  const providers = createProviders(host, normalizeSettings({}), { record: (entry) => records.push(entry) })
+  await assert.rejects(
+    () => providers.fetch.fetch({ url: 'http://192.168.1.1/admin' }),
+    (error) => error instanceof WebBrowserError && error.code === CODE.PROVIDER_ERROR,
+  )
+  assert.equal(records.length, 1)
+  assert.equal(records[0].op, 'fetch')
+  assert.equal(records[0].ok, false)
+  assert.equal(records[0].code, CODE.PROVIDER_ERROR)
+  assert.equal(records[0].host, '192.168.1.1')
+})
+
+test('the sandbox is only disabled where the launch cannot work otherwise', () => {
+  // Container and root are the two cases where Chrome cannot start with the
+  // sandbox on: no user namespace, or privileges it drops itself.
+  assert.equal(shouldDisableSandbox({ platform: 'linux', uid: 0, isContainer: false }), true)
+  assert.equal(shouldDisableSandbox({ platform: 'linux', uid: 1000, isContainer: true }), true)
+  assert.equal(shouldDisableSandbox({ platform: 'linux', uid: 0, isContainer: true }), true)
+  // A normal Linux user keeps the sandbox.
+  assert.equal(shouldDisableSandbox({ platform: 'linux', uid: 1000, isContainer: false }), false)
+  // macOS and Windows have no equivalent container story and never need the flag.
+  assert.equal(shouldDisableSandbox({ platform: 'darwin', uid: 0, isContainer: false }), false)
+  assert.equal(shouldDisableSandbox({ platform: 'win32', uid: 0, isContainer: true }), false)
+  // A platform without getuid (Windows) must not accidentally match root.
+  assert.equal(shouldDisableSandbox({ platform: 'linux', uid: undefined, isContainer: false }), false)
+})
+
+test('a search needs three results before it answers with them', () => {
+  // One or two hits from an engine that half-blocked the query read as an
+  // answer; asking for more makes the fallback actually run.
+  assert.equal(DEFAULTS.minResults, 3)
+  assert.equal(normalizeSettings({}).minResults, 3)
+  // Still overridable, and still clamped to the documented range.
+  assert.equal(normalizeSettings({ minResults: 5 }).minResults, 5)
+  assert.equal(normalizeSettings({ minResults: 0 }).minResults, 1)
+})
+
+test('the trace records the engine and hashes the query', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'dsh-web-browser-journal-'))
+  const journalPath = join(root, 'events.jsonl')
+  try {
+    const journal = createJournal(normalizeSettings({ journal: true, journalPath }))
+    journal.record({ op: 'search', ok: true, engine: 'duckduckgo', count: 4, durationMs: 1234, query: 'secret phrase' })
+    journal.record({ op: 'fetch', ok: false, durationMs: 12, host: 'example.com', code: 'WEB_PROVIDER_ERROR' })
+    const lines = readFileSync(journalPath, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
+    const [search, fetch] = lines
+    assert.equal(search.engine, 'duckduckgo')
+    assert.equal(search.count, 4)
+    assert.equal(search.queryHash, hash('secret phrase'))
+    assert.equal(search.queryHash.length, 16)
+    assert.equal(fetch.engine, undefined, 'a fetch has no engine field')
+    assert.equal(fetch.host, 'example.com')
+    assert.ok(!readFileSync(journalPath, 'utf8').includes('secret phrase'), 'the query text is never written')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })

@@ -56,6 +56,36 @@ user's decision to make, not a default.
 - **No outbound telemetry.** The only network traffic is the search engines and
   pages the model asked for, plus Chrome's own traffic to the local debugging
   port.
+- **No reaching into the local network by default.** `web_fetch` refuses
+  loopback, private, link-local and carrier-grade-NAT addresses (see
+  [Network reach](#network-reach)). Without this a model that was talked into
+  "fetch http://127.0.0.1:8080" would read a local service and hand its body back
+  as tool output.
+
+## Network reach
+
+`web_fetch` takes a URL from the model and opens it in the real browser, so the
+address is checked first (`lib/net-guard.js`) and refused with
+`WEB_PROVIDER_ERROR` when it is not publicly routable:
+
+- `localhost`, `*.localhost`;
+- IPv4 `0.0.0.0/8`, `10.0.0.0/8`, `100.64.0.0/10`, `127.0.0.0/8`,
+  `169.254.0.0/16`, `172.16.0.0/12`, `192.168.0.0/16`;
+- IPv6 `::1`, `::`, `fc00::/7`, `fe80::/10`, and IPv4-mapped forms of the above.
+
+Set `allowPrivateHosts: true` to reach a LAN address, or list the hosts you need
+(`allowPrivateHosts: ['nas.lan']`) to open only those. The check runs before
+navigation, so a refused URL never loads.
+
+In `signed-in` and `personal` modes the visit carries whatever cookies that
+profile holds, so a page the model asks for is fetched **as you**. A site that
+reaches by DNS or by allowlisted host is therefore not just reachable, it sees a
+logged-in session. Prefer `anonymous` for anything you did not choose yourself.
+
+**Residual risk: DNS rebinding is not defended against.** A public hostname that
+resolves to `127.0.0.1` at request time passes this check. Closing that gap means
+intercepting the actual request inside Chromium, which this bundle does not do
+yet; treat `allowPrivateHosts` and `mode` as the controls you have.
 
 ## Logging
 
@@ -75,7 +105,10 @@ content, so it cannot launder an injection attempt into instructions.
 ## Blast radius
 
 - Local process: it spawns one Chromium with a dedicated profile and a debugging
-  port bound to loopback.
+  port bound to loopback. The renderer sandbox stays enabled, except on Linux
+  where the browser is running as root or inside a container (there Chrome
+  cannot start with it on); every other platform keeps it on regardless of
+  privileges.
 - Disposal: when the plugin unloads, both providers are unregistered. The
   browser process is killed only if this plugin started it and
   `closeBrowserOnDispose` is enabled; a browser that was already running is left
@@ -96,6 +129,21 @@ Chrome for Testing build and nothing else:
   profile data, no machine identifier.
 - `autoProvision: false` disables it entirely for anyone who wants an offline,
   pinned browser, and `chromePath` always wins over the download.
+
+## Residual risks
+
+Two gaps remain after the guards above. Both are stated here so the decision to
+install is made with them in view, not discovered later:
+
+- **DNS rebinding is not defended against.** `lib/net-guard.js` judges the URL
+  string, not the address the browser actually connects to. A public hostname
+  that resolves to `127.0.0.1` passes. Mitigation available today: keep
+  `mode: anonymous` and `allowPrivateHosts: false`, and do not let the model
+  fetch hostnames you do not recognise.
+- **The downloaded browser archive is not signature-checked.** It is checked by
+  structure only, over TLS to Google's hosts. Mitigation: set `chromePath` to a
+  browser you installed and verified yourself, or use `autoProvision: false`
+  and provision offline.
 
 ## Politeness and target sites
 
