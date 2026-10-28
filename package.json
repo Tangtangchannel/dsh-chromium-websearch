@@ -57,11 +57,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amecandy/dsh-chromium-websearch.git"
+    "url": "git+https://github.com/Tangtangchannel/dsh-chromium-websearch.git"
   },
-  "homepage": "https://github.com/amecandy/dsh-chromium-websearch#readme",
+  "homepage": "https://github.com/Tangtangchannel/dsh-chromium-websearch#readme",
   "bugs": {
-    "url": "https://github.com/amecandy/dsh-chromium-websearch/issues"
+    "url": "https://github.com/Tangtangchannel/dsh-chromium-websearch/issues"
   },
   "keywords": [
     "dsh",
