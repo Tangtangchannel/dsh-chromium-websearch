@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Acceptance run for dsh-web-browser.
+ * Acceptance run for dsh-chromium-websearch.
  *
  * Sections, in order:
  *   1. static   - repository hygiene, no secrets, no personal paths, no host imports
@@ -27,7 +27,7 @@ const args = new Set(process.argv.slice(2))
 const skipBrowser = args.has('--skip-live')
 
 /** Runtime files that must never contain machine paths, secrets, or memory references. */
-const RUNTIME_FILES = ['index.js', 'package.json', 'cordis.patch.yml', 'README.md', 'SECURITY.md', 'icon.svg']
+const RUNTIME_FILES = ['index.js', 'package.json', 'cordis.patch.yml', 'README.md', 'README.zh-CN.md', 'SECURITY.md', 'icon.svg']
 
 /**
  * Walk a directory, returning files relative to the bundle root.
@@ -167,7 +167,7 @@ function scanPatch() {
   for (const needle of [
     'searchProvider: browser',
     'fetchProvider: browser',
-    "name: 'dsh-web-browser'",
+    "name: 'dsh-chromium-websearch'",
     'mode: anonymous',
   ]) {
     if (!active.includes(needle)) violation('cordis.patch.yml', `missing "${needle}"`)

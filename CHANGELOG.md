@@ -7,7 +7,7 @@ allowance: minor releases may break compatibility.
 
 ## [0.2.0] - 2026-10-28
 
-First public release.
+First public release, as `dsh-chromium-websearch`.
 
 ### Added
 
@@ -25,8 +25,9 @@ First public release.
 
 ### Changed
 
-- Package renamed from the local `@local/dsh-web-browser` to the publishable
-  `dsh-web-browser`; the composition patch updated accordingly.
+- Package published as `dsh-chromium-websearch` (formerly the local
+  `@local/dsh-web-browser`); the composition patch and install docs follow the
+  new name. On-disk state file names are unchanged.
 - GPL-3.0-or-later license.
 
 ## [0.1.3] - 2026-10-27

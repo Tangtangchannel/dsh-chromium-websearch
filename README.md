@@ -1,4 +1,6 @@
-# dsh-web-browser
+# dsh-chromium-websearch
+
+English · [中文](README.zh-CN.md)
 
 Browser-backed `web_search` and `web_fetch` for [DeepSeek Harness](https://www.npmjs.com/package/@deepseek-ai/dsh-base).
 Install it and it works: if the machine has no Chromium build, the browser is
@@ -61,7 +63,7 @@ why the bundled patch pins only `mode`:
 
 ```yaml
 - id: web-browser
-  name: 'dsh-web-browser'
+  name: 'dsh-chromium-websearch'
   config:
     mode: signed-in
 ```
@@ -84,13 +86,13 @@ itself pins only `mode`, so user-level overrides stay short.
 Install it as a profile bundle:
 
 ```
-plugin_manager install_bundle  target: dsh-web-browser
+plugin_manager install_bundle  target: dsh-chromium-websearch
 ```
 
 For local development, point the same call at the checkout instead:
 
 ```
-plugin_manager install_bundle  target: /absolute/path/to/dsh-web-browser
+plugin_manager install_bundle  target: /absolute/path/to/dsh-chromium-websearch
 ```
 
 No dependencies are installed: the bundle imports only `node:` builtins and its
@@ -222,7 +224,7 @@ passes, and `npm test` reports `PASSED 44 case(s)` for the offline subset.
 GPL-3.0-or-later. See [LICENSE](LICENSE) for the full text.
 
 ```
-Copyright (C) 2026 amechan
+Copyright (C) 2026 大肥鱼 (DeepSeek), amecandy
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -235,8 +237,8 @@ pass the plugin on, publish a modified version, or ship it inside a product.
 
 ## Authors
 
-- amechan
-- 大飞鱼
+- 大肥鱼（DeepSeek）
+- amecandy
 
 ## Troubleshooting
 

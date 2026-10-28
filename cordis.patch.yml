@@ -1,4 +1,4 @@
-# Composition for the dsh-web-browser bundle.
+# Composition for the dsh-chromium-websearch bundle.
 #
 # 1. Insert the plugin entry so its `apply` runs and registers the two providers.
 # 2. Repoint the `web` service at them. Overrides replace the whole `config`
@@ -9,7 +9,7 @@
 # without having to repeat defaults:
 #
 #   - id: web-browser
-#     name: 'dsh-web-browser'
+#     name: 'dsh-chromium-websearch'
 #     config:
 #       mode: signed-in
 #
@@ -21,7 +21,7 @@
 # this file non-portable and leak personal directory layout.
 - insert:
     - id: web-browser
-      name: 'dsh-web-browser'
+      name: 'dsh-chromium-websearch'
       config:
         mode: anonymous
 - id: web

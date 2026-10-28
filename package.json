@@ -1,5 +1,5 @@
 {
-  "name": "dsh-web-browser",
+  "name": "dsh-chromium-websearch",
   "version": "0.2.0",
   "description": "Browser-backed web_search and web_fetch for DeepSeek Harness: real Chromium, real pages, no API keys.",
   "type": "module",
@@ -22,6 +22,7 @@
     "icon.svg",
     "cordis.patch.yml",
     "README.md",
+    "README.zh-CN.md",
     "SECURITY.md",
     "CHANGELOG.md",
     "LICENSE"
@@ -47,25 +48,26 @@
     "prepublishOnly": "npm test"
   },
   "author": {
-    "name": "amechan"
+    "name": "大肥鱼 (DeepSeek)"
   },
   "contributors": [
     {
-      "name": "大飞鱼"
+      "name": "amecandy"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amechan/dsh-web-browser.git"
+    "url": "git+https://github.com/amecandy/dsh-chromium-websearch.git"
   },
-  "homepage": "https://github.com/amechan/dsh-web-browser#readme",
+  "homepage": "https://github.com/amecandy/dsh-chromium-websearch#readme",
   "bugs": {
-    "url": "https://github.com/amechan/dsh-web-browser/issues"
+    "url": "https://github.com/amecandy/dsh-chromium-websearch/issues"
   },
   "keywords": [
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
+    "websearch",
     "web-search",
     "web-fetch",
     "chromium",
