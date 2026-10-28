@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) with the usual `0.x`
 allowance: minor releases may break compatibility.
 
+## [0.2.1] - 2026-10-28
+
+### Fixed
+
+- Publish pipeline: the first release was blocked by npm's staged-publishing
+  placeholder, so 0.2.1 re-releases the same tree with a fresh version.
+
 ## [0.2.0] - 2026-10-28
 
 First public release, as `dsh-chromium-websearch`.
