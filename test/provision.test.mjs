@@ -119,7 +119,7 @@ test('archive selection reads the stable channel only', () => {
 test('binary layout matches the official archives', () => {
   assert.equal(
     binaryIn('/cache/141.0.7390.54', 'mac-x64'),
-    join('/cache/141.0.7390.54', 'mac-x64', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
+    join('/cache/141.0.7390.54', 'chrome-mac-x64', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
   )
   assert.equal(binaryIn('/cache/141.0.7390.54', 'linux64'), join('/cache/141.0.7390.54', 'chrome-linux64', 'chrome'))
   assert.equal(binaryIn('/cache/141.0.7390.54', 'win64'), join('/cache/141.0.7390.54', 'chrome-win64', 'chrome.exe'))

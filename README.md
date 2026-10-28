@@ -151,6 +151,7 @@ browser installed.
 | `chromePath` | auto-detect | Browser binary. Also read from `DSH_BROWSER_CHROME` or `CHROME_PATH`. |
 | `autoProvision` | `true` | Download Chrome for Testing when no browser exists. |
 | `provisionDir` | `~/.dsh/browser-web/chromium` | Where the downloaded build lives. |
+| `indexUrl` | the Chrome for Testing index | Override for a mirror or an offline copy of the same JSON document. |
 | `port` | `9334` | Preferred DevTools port. If it is taken, the host scans upward (at most 10 ports) and records the port it actually got. |
 | `headless` | `false` | Run without a window. Some walls only clear headful. |
 | `engines` | `bing`, `duckduckgo`, `baidu` | Preference order. |
