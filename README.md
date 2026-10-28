@@ -61,7 +61,7 @@ why the bundled patch pins only `mode`:
 
 ```yaml
 - id: web-browser
-  name: '@local/dsh-web-browser'
+  name: 'dsh-web-browser'
   config:
     mode: signed-in
 ```
