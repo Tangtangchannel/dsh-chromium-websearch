@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Browser web search",
+    "description": "Routes web search and page fetches through a real Chromium window instead of an HTTP-only client."
+  }
+}

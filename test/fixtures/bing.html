@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>search fixture</title></head>
+<body>
+  <main id="b_results">
+    <li class="b_algo b_ans" data-priority="">
+      <h2><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">Fetch API - MDN Web Docs</a></h2>
+      <div class="b_caption"><p>The Fetch API provides an interface for fetching resources.</p></div>
+    </li>
+    <li class="b_algo">
+      <h2><a href="https://nodejs.org/api/globals.html">Global objects | Node.js Documentation</a></h2>
+      <div class="b_snippet">Global objects available in every module.</div>
+    </li>
+    <li class="b_algo">
+      <h2><a href="javascript:alert('nope')">Broken entry</a></h2>
+      <div class="b_caption"><p>Should be dropped by the URL validator.</p></div>
+    </li>
+  </main>
+  <aside id="b_context">
+    <li class="b_algo">
+      <h2><a href="https://ads.example/decoy">Advertisement decoy</a></h2>
+      <p>Must not be extracted.</p>
+    </li>
+  </aside>
+</body>
+</html>

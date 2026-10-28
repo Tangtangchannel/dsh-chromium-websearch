@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "浏览器联网检索",
+    "description": "把联网搜索与网页抓取交给真实的 Chromium 窗口，而不是纯 HTTP 客户端。"
+  }
+}

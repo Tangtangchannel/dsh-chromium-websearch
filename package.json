@@ -1,0 +1,74 @@
+{
+  "name": "dsh-web-browser",
+  "version": "0.2.0",
+  "description": "Browser-backed web_search and web_fetch for DeepSeek Harness: real Chromium, real pages, no API keys.",
+  "type": "module",
+  "license": "GPL-3.0-or-later",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "index.js",
+    "lib/",
+    "locale/",
+    "scripts/",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-web": ">=0.2.1-rc.4"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-web": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "node test/run.mjs",
+    "accept": "node ./scripts/accept.mjs",
+    "accept:fast": "node ./scripts/accept.mjs --skip-live",
+    "prepublishOnly": "npm test"
+  },
+  "author": {
+    "name": "amechan"
+  },
+  "contributors": [
+    {
+      "name": "大飞鱼"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amechan/dsh-web-browser.git"
+  },
+  "homepage": "https://github.com/amechan/dsh-web-browser#readme",
+  "bugs": {
+    "url": "https://github.com/amechan/dsh-web-browser/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "web-search",
+    "web-fetch",
+    "chromium",
+    "cordis"
+  ]
+}

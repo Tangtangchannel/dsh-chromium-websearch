@@ -1,0 +1,31 @@
+# Composition for the dsh-web-browser bundle.
+#
+# 1. Insert the plugin entry so its `apply` runs and registers the two providers.
+# 2. Repoint the `web` service at them. Overrides replace the whole `config`
+#    object, so both provider fields are stated here.
+#
+# Only `mode` is pinned here; every other field keeps its documented default, so
+# a user-level override in `~/.dsh/cordis.patch.yml` can restate the whole config
+# without having to repeat defaults:
+#
+#   - id: web-browser
+#     name: 'dsh-web-browser'
+#     config:
+#       mode: signed-in
+#
+# Modes: A (anonymous, default) | B (signed-in) | C (personal, needs
+# personalProfileDir). See README "Modes".
+#
+# Deliberately no chromePath: the plugin discovers a Chromium build from
+# $HOME / standard install locations, and a per-machine absolute path would make
+# this file non-portable and leak personal directory layout.
+- insert:
+    - id: web-browser
+      name: 'dsh-web-browser'
+      config:
+        mode: anonymous
+- id: web
+  name: '@deepseek-ai/dsh-web'
+  config:
+    searchProvider: browser
+    fetchProvider: browser

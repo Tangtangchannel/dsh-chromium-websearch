@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>百度搜索夹具</title></head>
+<body>
+  <div id="content_left">
+    <div class="result c-container" mu="https://example.com/from-mu">
+      <h3 class="t"><a href="http://www.baidu.com/link?url=abc">来自 mu 属性</a></h3>
+      <div class="c-abstract">摘要一。</div>
+    </div>
+    <div class="result c-container" data-tools='{"title":"来自 data-tools","url":"https://example.com/from-tools"}'>
+      <h3 class="t"><a href="http://www.baidu.com/link?url=def">来自 data-tools 属性</a></h3>
+      <div class="c-span-last">摘要二。</div>
+    </div>
+    <div class="result c-container">
+      <h3 class="t"><a href="http://www.baidu.com/link?url=ghi">只有跳转链接</a></h3>
+    </div>
+  </div>
+  <div id="content_right">
+    <div class="result c-container" mu="https://ads.example/decoy">
+      <h3><a href="https://ads.example/decoy">右侧广告</a></h3>
+    </div>
+  </div>
+</body>
+</html>
